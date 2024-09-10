@@ -39,10 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add like button with heart symbol
             const likeButton = document.createElement('button');
             likeButton.classList.add('like-button');
-            likeButton.innerHTML = '&#9829;'; // Unicode heart symbol
+            likeButton.innerHTML = '&#10084;'; // Unicode heart symbol
             likeButton.addEventListener('click', () => {
                 likeButton.classList.toggle('liked');
-                likeButton.innerHTML = likeButton.classList.contains('liked') ? '&#9829;' : '&#9829;'; // Keep heart symbol
+                // Toggle the heart symbol color with class change
+                likeButton.innerHTML = likeButton.classList.contains('liked') ? '&#10084;' : '&#10084;';
             });
             postDiv.appendChild(likeButton);
 
