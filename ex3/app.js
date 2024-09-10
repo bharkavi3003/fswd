@@ -32,20 +32,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     const img = document.createElement('img');
                     img.src = event.target.result;
                     postDiv.appendChild(img);
+                    
+                    // Add like section below the image
+                    const likeSection = document.createElement('div');
+                    likeSection.classList.add('like-section');
+
+                    // Add heart button
+                    const likeButton = document.createElement('button');
+                    likeButton.classList.add('like-button');
+                    likeButton.innerHTML = '&#10084;'; // Unicode heart symbol
+                    likeButton.addEventListener('click', () => {
+                        likeButton.classList.toggle('liked');
+                        likeText.classList.toggle('liked');
+                    });
+                    likeSection.appendChild(likeButton);
+
+                    // Add text like option
+                    const likeText = document.createElement('span');
+                    likeText.classList.add('like-text');
+                    likeText.textContent = 'Like';
+                    likeText.addEventListener('click', () => {
+                        likeButton.classList.toggle('liked');
+                        likeText.classList.toggle('liked');
+                    });
+                    likeSection.appendChild(likeText);
+
+                    postDiv.appendChild(likeSection);
                 };
                 reader.readAsDataURL(imageFile);
             }
-
-            // Add like button with heart symbol
-            const likeButton = document.createElement('button');
-            likeButton.classList.add('like-button');
-            likeButton.innerHTML = '&#10084;'; // Unicode heart symbol
-            likeButton.addEventListener('click', () => {
-                likeButton.classList.toggle('liked');
-                // Toggle the heart symbol color with class change
-                likeButton.innerHTML = likeButton.classList.contains('liked') ? '&#10084;' : '&#10084;';
-            });
-            postDiv.appendChild(likeButton);
 
             postsContainer.appendChild(postDiv);
 
