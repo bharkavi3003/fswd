@@ -82,5 +82,5 @@ button:hover {
 }
 
 .like-button.liked {
-    color: #ff0000;
+    color: #ff0000; /* Red color for liked state */
 }
