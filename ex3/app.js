@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render existing comments
         post.comments.forEach(comment => {
-            renderComment(comment, postDiv);
+            renderComment(comment, postDiv, post);
         });
 
         postsContainer.appendChild(postDiv);
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 post.comments.push(comment);
                 commentCountDisplay.textContent = ` Comments: ${post.comments.length}`;
                 updatePostInStorage(post);
-                renderComment(comment, postDiv);
+                renderComment(comment, postDiv, post);
 
                 // Clear the input
                 commentInput.value = '';
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('posts', JSON.stringify(updatedPosts));
     }
 
-    function renderComment(comment, postDiv) {
+    function renderComment(comment, postDiv, post) {
         const commentDisplay = document.createElement('div');
         commentDisplay.classList.add('comment-display');
         commentDisplay.textContent = `${comment.emotion} ${comment.text}`;
@@ -205,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         likeButton.addEventListener('click', () => {
             comment.likeCount++;
             likeCountDisplay.textContent = ` Likes: ${comment.likeCount}`;
+            updateCommentInPost(post, comment);
         });
         likeSection.appendChild(likeButton);
 
@@ -218,10 +219,17 @@ document.addEventListener('DOMContentLoaded', () => {
         dislikeButton.addEventListener('click', () => {
             comment.dislikeCount++;
             dislikeCountDisplay.textContent = ` Dislikes: ${comment.dislikeCount}`;
+            updateCommentInPost(post, comment);
         });
         likeSection.appendChild(dislikeButton);
 
         commentDisplay.appendChild(likeSection);
         postDiv.appendChild(commentDisplay);
+    }
+
+    function updateCommentInPost(post, comment) {
+        const updatedComments = post.comments.map(c => c.text === comment.text ? comment : c);
+        post.comments = updatedComments;
+        updatePostInStorage(post);
     }
 });
