@@ -1,45 +1,32 @@
 let cart = [];
 let totalPrice = 0;
 
-function addToCart(dishName, price) {
-    const existingDish = cart.find(item => item.dishName === dishName);
-    if (existingDish) {
-        existingDish.quantity++;
-    } else {
-        cart.push({ dishName, price, quantity: 1 });
-    }
+function addToCart(itemName, itemPrice) {
+    cart.push({ name: itemName, price: itemPrice });
+    totalPrice += itemPrice;
     updateCart();
 }
 
 function updateCart() {
     const cartItems = document.getElementById('cartItems');
-    cartItems.innerHTML = '';
-    totalPrice = 0;
+    cartItems.innerHTML = ''; // Clear current items
 
     cart.forEach(item => {
         const li = document.createElement('li');
-        li.textContent = `${item.dishName} - $${item.price} x ${item.quantity}`;
-        
-        // Remove button
-        const removeButton = document.createElement('button');
-        removeButton.textContent = 'Remove';
-        removeButton.onclick = () => removeFromCart(item.dishName);
-        li.appendChild(removeButton);
-        
+        li.textContent = `${item.name} - $${item.price}`;
         cartItems.appendChild(li);
-        totalPrice += item.price * item.quantity;
     });
 
-    document.getElementById('totalPrice').textContent = totalPrice;
-}
-
-function removeFromCart(dishName) {
-    cart = cart.filter(item => item.dishName !== dishName);
-    updateCart();
+    document.getElementById('totalPrice').textContent = totalPrice.toFixed(2);
 }
 
 function checkout() {
-    alert(`Your total is $${totalPrice}. Thank you for your order!`);
-    cart = [];
-    updateCart();
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+    alert(`Thank you for your order! Total: $${totalPrice.toFixed(2)}`);
+    cart = []; // Clear the cart
+    totalPrice = 0;
+    updateCart(); // Update UI
 }
