@@ -4,31 +4,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const postImage = document.getElementById('postImage');
     const postsContainer = document.getElementById('postsContainer');
 
-    // Load posts from localStorage on page load
-    loadPosts();
-
     postForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
         const content = postContent.value.trim();
         const imageFile = postImage.files[0];
-        const postId = Date.now(); // Unique ID for each post
 
         if (content || imageFile) {
-            const post = {
-                id: postId,
-                content: content,
-                image: imageFile ? URL.createObjectURL(imageFile) : null,
-                likeCount: 0,
-                dislikeCount: 0,
-                comments: []
-            };
+            const postDiv = document.createElement('div');
+            postDiv.classList.add('post');
 
-            // Add post to localStorage
-            addPostToStorage(post);
+            // Add timestamp
+            const timestamp = document.createElement('div');
+            timestamp.classList.add('timestamp');
+            timestamp.textContent = new Date().toLocaleString();
+            postDiv.appendChild(timestamp);
 
-            // Render the new post
-            renderPost(post);
+            // Add post content
+            const textPara = document.createElement('p');
+            textPara.textContent = content;
+            postDiv.appendChild(textPara);
+
+            // Initialize counts
+            let likeCount = 0;
+            let dislikeCount = 0;
+            let commentCount = 0;
+
+            // Add image if available
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    postDiv.appendChild(img);
+                    addLikeDislikeSection(postDiv, likeCount, dislikeCount);
+                    addCommentSection(postDiv, commentCount);
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                addLikeDislikeSection(postDiv, likeCount, dislikeCount);
+                addCommentSection(postDiv, commentCount);
+            }
+
+            postsContainer.appendChild(postDiv);
 
             // Clear form fields
             postContent.value = '';
@@ -36,56 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function loadPosts() {
-        const posts = JSON.parse(localStorage.getItem('posts')) || [];
-        posts.forEach(post => {
-            renderPost(post);
-        });
-    }
-
-    function addPostToStorage(post) {
-        const posts = JSON.parse(localStorage.getItem('posts')) || [];
-        posts.push(post);
-        localStorage.setItem('posts', JSON.stringify(posts));
-    }
-
-    function renderPost(post) {
-        const postDiv = document.createElement('div');
-        postDiv.classList.add('post');
-
-        // Add timestamp
-        const timestamp = document.createElement('div');
-        timestamp.classList.add('timestamp');
-        timestamp.textContent = new Date(post.id).toLocaleString();
-        postDiv.appendChild(timestamp);
-
-        // Add post content
-        const textPara = document.createElement('p');
-        textPara.textContent = post.content;
-        postDiv.appendChild(textPara);
-
-        // Add image if available
-        if (post.image) {
-            const img = document.createElement('img');
-            img.src = post.image;
-            postDiv.appendChild(img);
-        }
-
-        // Render like/dislike section
-        addLikeDislikeSection(postDiv, post);
-
-        // Render comment section
-        addCommentSection(postDiv, post);
-
-        // Render existing comments
-        post.comments.forEach(comment => {
-            renderComment(comment, postDiv);
-        });
-
-        postsContainer.appendChild(postDiv);
-    }
-
-    function addLikeDislikeSection(postDiv, post) {
+    function addLikeDislikeSection(postDiv, likeCount, dislikeCount) {
         const likeSection = document.createElement('div');
         likeSection.classList.add('like-section');
 
@@ -96,13 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add like count display
         const likeCountDisplay = document.createElement('span');
-        likeCountDisplay.textContent = ` Likes: ${post.likeCount}`;
+        likeCountDisplay.textContent = ` Likes: ${likeCount}`;
         likeSection.appendChild(likeCountDisplay);
 
         likeButton.addEventListener('click', () => {
-            post.likeCount++;
-            likeCountDisplay.textContent = ` Likes: ${post.likeCount}`;
-            updatePostInStorage(post);
+            likeCount++;
+            likeCountDisplay.textContent = ` Likes: ${likeCount}`;
+            likeButton.classList.add('liked');
         });
         likeSection.appendChild(likeButton);
 
@@ -113,26 +82,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add dislike count display
         const dislikeCountDisplay = document.createElement('span');
-        dislikeCountDisplay.textContent = ` Dislikes: ${post.dislikeCount}`;
+        dislikeCountDisplay.textContent = ` Dislikes: ${dislikeCount}`;
         likeSection.appendChild(dislikeCountDisplay);
 
         dislikeButton.addEventListener('click', () => {
-            post.dislikeCount++;
-            dislikeCountDisplay.textContent = ` Dislikes: ${post.dislikeCount}`;
-            updatePostInStorage(post);
+            dislikeCount++;
+            dislikeCountDisplay.textContent = ` Dislikes: ${dislikeCount}`;
+            dislikeButton.classList.add('disliked');
         });
         likeSection.appendChild(dislikeButton);
 
         postDiv.appendChild(likeSection);
     }
 
-    function addCommentSection(postDiv, post) {
+    function addCommentSection(postDiv, commentCount) {
         const commentSection = document.createElement('div');
         commentSection.classList.add('comment-section');
 
         // Comment count display
         const commentCountDisplay = document.createElement('span');
-        commentCountDisplay.textContent = ` Comments: ${post.comments.length}`;
+        commentCountDisplay.textContent = ` Comments: ${commentCount}`;
         commentSection.appendChild(commentCountDisplay);
 
         // Comment input
@@ -162,69 +131,64 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedEmotion = emotionsSelect.value;
 
             if (commentText) {
-                const comment = {
-                    text: commentText,
-                    emotion: selectedEmotion,
-                    likeCount: 0,
-                    dislikeCount: 0
-                };
-
-                // Add comment to post and localStorage
-                post.comments.push(comment);
-                commentCountDisplay.textContent = ` Comments: ${post.comments.length}`;
-                updatePostInStorage(post);
-                renderComment(comment, postDiv);
+                commentCount++;
+                commentCountDisplay.textContent = ` Comments: ${commentCount}`;
 
                 // Clear the input
                 commentInput.value = '';
+
+                // Display the comment
+                const commentDisplay = document.createElement('div');
+                commentDisplay.classList.add('comment-display');
+                commentDisplay.textContent = `${selectedEmotion} ${commentText}`;
+                commentSection.appendChild(commentDisplay);
+
+                // Add like and dislike buttons for the comment
+                addLikeDislikeToComment(commentDisplay);
             }
         });
 
         postDiv.appendChild(commentSection);
     }
 
-    function updatePostInStorage(post) {
-        const posts = JSON.parse(localStorage.getItem('posts')) || [];
-        const updatedPosts = posts.map(p => p.id === post.id ? post : p);
-        localStorage.setItem('posts', JSON.stringify(updatedPosts));
-    }
-
-    function renderComment(comment, postDiv) {
-        const commentDisplay = document.createElement('div');
-        commentDisplay.classList.add('comment-display');
-        commentDisplay.textContent = `${comment.emotion} ${comment.text}`;
-
-        // Like/Dislike section for the comment
+    function addLikeDislikeToComment(commentDisplay) {
         const likeSection = document.createElement('div');
         likeSection.classList.add('like-section');
 
-        const likeCountDisplay = document.createElement('span');
-        likeCountDisplay.textContent = ` Likes: ${comment.likeCount}`;
-        likeSection.appendChild(likeCountDisplay);
-
+        // Like button
         const likeButton = document.createElement('button');
         likeButton.classList.add('like-button');
         likeButton.innerHTML = '&#10084;'; // Heart symbol
+        let likeCount = 0;
+
+        const likeCountDisplay = document.createElement('span');
+        likeCountDisplay.textContent = ` Likes: ${likeCount}`;
+        likeSection.appendChild(likeCountDisplay);
+
         likeButton.addEventListener('click', () => {
-            comment.likeCount++;
-            likeCountDisplay.textContent = ` Likes: ${comment.likeCount}`;
+            likeCount++;
+            likeCountDisplay.textContent = ` Likes: ${likeCount}`;
+            likeButton.classList.add('liked');
         });
         likeSection.appendChild(likeButton);
 
-        const dislikeCountDisplay = document.createElement('span');
-        dislikeCountDisplay.textContent = ` Dislikes: ${comment.dislikeCount}`;
-        likeSection.appendChild(dislikeCountDisplay);
-
+        // Dislike button
         const dislikeButton = document.createElement('button');
         dislikeButton.classList.add('dislike-button');
         dislikeButton.innerHTML = '&#10060;'; // Cross mark symbol
+        let dislikeCount = 0;
+
+        const dislikeCountDisplay = document.createElement('span');
+        dislikeCountDisplay.textContent = ` Dislikes: ${dislikeCount}`;
+        likeSection.appendChild(dislikeCountDisplay);
+
         dislikeButton.addEventListener('click', () => {
-            comment.dislikeCount++;
-            dislikeCountDisplay.textContent = ` Dislikes: ${comment.dislikeCount}`;
+            dislikeCount++;
+            dislikeCountDisplay.textContent = ` Dislikes: ${dislikeCount}`;
+            dislikeButton.classList.add('disliked');
         });
         likeSection.appendChild(dislikeButton);
 
         commentDisplay.appendChild(likeSection);
-        postDiv.appendChild(commentDisplay);
     }
 });
