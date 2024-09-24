@@ -25,8 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
             textPara.textContent = content;
             postDiv.appendChild(textPara);
 
-            // Initialize like count
+            // Initialize counts
             let likeCount = 0;
+            let dislikeCount = 0;
+            let commentCount = 0;
 
             // Add image if available
             if (imageFile) {
@@ -35,11 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const img = document.createElement('img');
                     img.src = event.target.result;
                     postDiv.appendChild(img);
-                    addLikeSection(postDiv, likeCount);
+                    addLikeDislikeSection(postDiv, likeCount, dislikeCount);
+                    addCommentSection(postDiv, commentCount);
                 };
                 reader.readAsDataURL(imageFile);
             } else {
-                addLikeSection(postDiv, likeCount);
+                addLikeDislikeSection(postDiv, likeCount, dislikeCount);
+                addCommentSection(postDiv, commentCount);
             }
 
             postsContainer.appendChild(postDiv);
@@ -50,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function addLikeSection(postDiv, likeCount) {
+    function addLikeDislikeSection(postDiv, likeCount, dislikeCount) {
         const likeSection = document.createElement('div');
         likeSection.classList.add('like-section');
 
@@ -61,27 +65,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add like count display
         const likeCountDisplay = document.createElement('span');
-        likeCountDisplay.textContent = ` ${likeCount}`;
+        likeCountDisplay.textContent = ` Likes: ${likeCount}`;
         likeSection.appendChild(likeCountDisplay);
 
         likeButton.addEventListener('click', () => {
-            likeCount++; // Increment like count
-            likeCountDisplay.textContent = ` ${likeCount}`; // Update displayed like count
+            likeCount++;
+            likeCountDisplay.textContent = ` Likes: ${likeCount}`;
             likeButton.classList.add('liked'); // Change button color
         });
         likeSection.appendChild(likeButton);
 
-        // Add text like option
-        const likeText = document.createElement('span');
-        likeText.classList.add('like-text');
-        likeText.textContent = ' Like';
-        likeText.addEventListener('click', () => {
-            likeCount++; // Increment like count
-            likeCountDisplay.textContent = ` ${likeCount}`; // Update displayed like count
-            likeButton.classList.add('liked'); // Change button color
+        // Add dislike button
+        const dislikeButton = document.createElement('button');
+        dislikeButton.classList.add('dislike-button');
+        dislikeButton.innerHTML = '&#10060;'; // Unicode cross mark
+
+        // Add dislike count display
+        const dislikeCountDisplay = document.createElement('span');
+        dislikeCountDisplay.textContent = ` Dislikes: ${dislikeCount}`;
+        likeSection.appendChild(dislikeCountDisplay);
+
+        dislikeButton.addEventListener('click', () => {
+            dislikeCount++;
+            dislikeCountDisplay.textContent = ` Dislikes: ${dislikeCount}`;
+            dislikeButton.classList.add('disliked'); // Change button color
         });
-        likeSection.appendChild(likeText);
+        likeSection.appendChild(dislikeButton);
 
         postDiv.appendChild(likeSection);
+    }
+
+    function addCommentSection(postDiv, commentCount) {
+        const commentSection = document.createElement('div');
+        commentSection.classList.add('comment-section');
+
+        // Comment count display
+        const commentCountDisplay = document.createElement('span');
+        commentCountDisplay.textContent = ` Comments: ${commentCount}`;
+        commentSection.appendChild(commentCountDisplay);
+
+        // Comment input
+        const commentInput = document.createElement('input');
+        commentInput.type = 'text';
+        commentInput.placeholder = 'Add a comment...';
+        commentSection.appendChild(commentInput);
+
+        // Comment button
+        const commentButton = document.createElement('button');
+        commentButton.textContent = 'Comment';
+        commentSection.appendChild(commentButton);
+
+        commentButton.addEventListener('click', () => {
+            const commentText = commentInput.value.trim();
+            if (commentText) {
+                commentCount++;
+                commentCountDisplay.textContent = ` Comments: ${commentCount}`;
+
+                // Clear the input
+                commentInput.value = '';
+                
+                // Optionally, display the comment
+                const commentDisplay = document.createElement('div');
+                commentDisplay.textContent = commentText;
+                commentSection.appendChild(commentDisplay);
+            }
+        });
+
+        postDiv.appendChild(commentSection);
     }
 });
